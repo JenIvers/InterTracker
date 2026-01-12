@@ -1,0 +1,68 @@
+{
+  "name": "InternPro AI Workspace",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // 1. AUTO-INSTALLATION
+  // Installs Gemini CLI (latest), Firebase Tools (for your deployment), and project deps
+  "postCreateCommand": "npm install -g @google/gemini-cli@latest firebase-tools && npm install",
+
+  // 2. AUTO-START
+  // We launch the Gemini CLI immediately as requested. 
+  // Note: Open a NEW terminal (Ctrl+Shift+`) to run 'npm run dev' so this stays open.
+  "postAttachCommand": "clear && echo 'Welcome to InternPro! Starting Gemini...' && gemini",
+
+  // 3. PORT FORWARDING
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "InternPro App",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "workbench.statusBar.visible": true,
+        "editor.minimap.enabled": false,
+        "terminal.integrated.defaultLocation": "bottom",
+        "files.autoSave": "afterDelay",
+        
+        // STRICT LINTING SETTINGS
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+        },
+        "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+        "typescript.tsdk": "node_modules/typescript/lib",
+
+        // MODIFIED: We MUST show these files to manage strict type checking
+        "files.exclude": {
+          "**/.git": true,
+          "**/.ds_store": true,
+          "**/node_modules": true,
+          "**/dist": true,
+          ".devcontainer": true,
+          ".github": true,
+          // Un-hidden so you can configure strict rules:
+          // "tsconfig.json": true, 
+          // "package.json": true,
+          // "vite.config.ts": true,
+          // ".eslintrc.cjs": true,
+          ".firebaserc": true,
+          "firebase.json": true
+        }
+      },
+      // 4. EXTENSIONS FOR STRICTNESS
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "usernamehw.errorlens" // Highlights errors inline so you can't miss them
+      ]
+    }
+  }
+}
