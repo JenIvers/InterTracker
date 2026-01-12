@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
@@ -144,19 +143,19 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex">
       <Sidebar currentView={currentView} setView={setView} />
       
       <main className="flex-1 md:ml-64 p-4 md:p-8 max-w-7xl mx-auto w-full pb-24 md:pb-8">
         <div className="md:hidden flex items-center justify-between mb-6">
            <div className="flex items-center gap-2">
-             <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-blue-100">P</div>
-             <h1 className="text-lg font-black bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+             <div className="w-8 h-8 rounded-xl bg-[#162D34] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-[#162D3433]">P</div>
+             <h1 className="text-lg font-black bg-gradient-to-r from-[#162D34] to-[#4587A7] bg-clip-text text-transparent">
                InternPro
              </h1>
            </div>
-           <div className="flex items-center gap-2">
-             <span className="text-[10px] font-black text-slate-400 bg-white border border-slate-100 px-2 py-1 rounded-full uppercase">Bethel U</span>
+           <div className="flex items-center gap-2 text-right">
+             <span className="text-[10px] text-app-slate font-black uppercase tracking-widest opacity-70">Bethel University</span>
            </div>
         </div>
 
@@ -169,7 +168,7 @@ const App: React.FC = () => {
         <div className="md:hidden fixed bottom-20 right-6 z-40">
           <button 
             onClick={() => setView('logs')}
-            className="w-14 h-14 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-100 text-white flex items-center justify-center text-2xl active:scale-95 transition-all"
+            className="w-14 h-14 bg-[#162D34] rounded-2xl shadow-xl shadow-[#162D3433] text-white flex items-center justify-center text-2xl active:scale-95 transition-all"
             aria-label="Add log"
           >
             +

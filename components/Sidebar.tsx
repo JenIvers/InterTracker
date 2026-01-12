@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { LayoutDashboard, Clock, Target, Folder, School } from 'lucide-react';
 
 interface SidebarProps {
   currentView: string;
@@ -8,41 +8,50 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'logs', label: 'Hours Log', icon: '🕒' },
-    { id: 'competencies', label: 'Competencies', icon: '🎯' },
-    { id: 'artifacts', label: 'Artifact Vault', icon: '📁' },
-    { id: 'sites', label: 'Sites', icon: '🏫' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'logs', label: 'Activity Log', icon: Clock },
+    { id: 'competencies', label: 'Competencies', icon: Target },
+    { id: 'artifacts', label: 'Artifact Vault', icon: Folder },
+    { id: 'sites', label: 'Sites', icon: School },
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 h-screen fixed left-0 top-0 hidden md:flex flex-col">
-      <div className="p-6 border-b border-slate-100">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+    <aside className="w-64 glass border-r border-white/30 h-screen fixed left-0 top-0 hidden md:flex flex-col z-50">
+      <div className="p-10 border-b border-white/20 flex flex-col items-center text-center">
+        <h1 className="text-2xl font-black bg-gradient-to-br from-app-dark via-app-deep to-app-bright bg-clip-text text-transparent tracking-tighter">
           InternPro
         </h1>
-        <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Bethel University</p>
+        <p className="text-[10px] text-app-slate font-black uppercase tracking-[0.25em] mt-2 opacity-70">
+          Bethel University
+        </p>
       </div>
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setView(item.id)}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              currentView === item.id
-                ? 'bg-blue-50 text-blue-600 shadow-sm font-semibold'
-                : 'text-slate-500 hover:bg-slate-50'
-            }`}
-          >
-            <span className="text-xl">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto mt-4">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${
+                isActive
+                  ? 'bg-app-dark text-white shadow-xl shadow-[#14293022] font-bold scale-[1.02]'
+                  : 'text-app-deep/70 hover:bg-white/50 hover:text-app-dark'
+              }`}
+            >
+              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+              <span className="text-sm tracking-tight">{item.label}</span>
+            </button>
+          );
+        })}
       </nav>
-      <div className="p-4 border-t border-slate-100">
-        <div className="bg-slate-50 rounded-xl p-4">
-          <p className="text-xs font-semibold text-slate-500 mb-1">Portfolio Status</p>
-          <p className="text-[10px] text-slate-400 mt-2 tracking-tight uppercase font-black">Active Session</p>
+      <div className="p-5 border-t border-white/20">
+        <div className="glass-blue rounded-2xl p-4">
+          <p className="text-[10px] font-black text-app-deep uppercase tracking-widest mb-1 opacity-60">Status</p>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-app-bright animate-pulse shadow-[0_0_8px_rgba(66,131,164,0.5)]" />
+            <p className="text-xs font-bold text-app-dark">Cloud Syncing</p>
+          </div>
         </div>
       </div>
     </aside>

@@ -1,5 +1,5 @@
 {
-  "name": "internship-pro-tracker",
+  "name": "internpro",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,8 @@
   "dependencies": {
     "react-dom": "^19.2.3",
     "react": "^19.2.3",
-    "recharts": "^3.6.0"
+    "recharts": "^3.6.0",
+    "lucide-react": "0.475.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

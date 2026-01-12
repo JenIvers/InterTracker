@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { InternshipLog } from '../types';
 import { ALL_COMPETENCIES } from '../constants';
+import { Clock, Calendar, School, Plus, PencilLine, Tag, Timer, X } from 'lucide-react';
 
 interface LogsViewProps {
   logs: InternshipLog[];
@@ -68,62 +68,85 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-slate-800">Hours & Activity Log</h2>
+    <div className="space-y-8 pb-20 md:pb-8">
+      <div className="flex justify-between items-center px-4">
+        <div>
+          <h2 className="text-3xl font-black text-app-dark tracking-tight">Activity Log</h2>
+          <p className="text-app-slate text-base font-bold opacity-70">Cataloging real-world leadership moments.</p>
+        </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold shadow-sm hover:bg-blue-700 transition-all flex items-center space-x-2"
+          className={`px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 shadow-2xl ${
+            isAdding 
+              ? 'bg-white text-app-dark border border-white/50' 
+              : 'bg-app-dark text-white shadow-app-dark/30 hover:scale-105 active:scale-95'
+          }`}
         >
-          <span>{isAdding ? 'Cancel' : '+ Log Hours'}</span>
+          {isAdding ? <X size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
+          <span>{isAdding ? 'Close' : 'New Entry'}</span>
         </button>
       </div>
 
       {isAdding && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 space-y-4 animate-in fade-in slide-in-from-top-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Date</label>
-              <input type="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+        <form onSubmit={handleSubmit} className="glass p-10 rounded-[3.5rem] shadow-2xl border border-white/60 space-y-10 animate-in fade-in slide-in-from-top-6 duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-[11px] font-black text-app-slate uppercase tracking-[0.2em] ml-2">
+                <Calendar size={14} className="text-app-bright" /> Date of Engagement
+              </label>
+              <input type="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full p-5 rounded-[1.5rem] bg-white/60 border-none focus:ring-4 focus:ring-app-bright/10 outline-none font-bold text-app-dark shadow-inner" />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Hours</label>
-              <input type="number" step="0.5" name="hours" value={formData.hours} onChange={handleInputChange} required className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-[11px] font-black text-app-slate uppercase tracking-[0.2em] ml-2">
+                <Timer size={14} className="text-app-bright" /> Credit Hours
+              </label>
+              <input type="number" step="0.5" name="hours" value={formData.hours} onChange={handleInputChange} required className="w-full p-5 rounded-[1.5rem] bg-white/60 border-none focus:ring-4 focus:ring-app-bright/10 outline-none font-bold text-app-dark shadow-inner" />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">School Level</label>
-              <select name="schoolLevel" value={formData.schoolLevel} onChange={handleInputChange} className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-                <option value="Primary">Primary (K-6)</option>
-                <option value="Secondary">Secondary (6-12)</option>
-                <option value="Alternate">Alternate</option>
-              </select>
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-[11px] font-black text-app-slate uppercase tracking-[0.2em] ml-2">
+                <School size={14} className="text-app-bright" /> Institutional Context
+              </label>
+              <div className="relative">
+                <select name="schoolLevel" value={formData.schoolLevel} onChange={handleInputChange} className="w-full p-5 rounded-[1.5rem] bg-white/60 border-none focus:ring-4 focus:ring-app-bright/10 outline-none font-bold text-app-dark appearance-none shadow-inner">
+                  <option value="Primary">Primary (K-6)</option>
+                  <option value="Secondary">Secondary (6-12)</option>
+                  <option value="Alternate">Alternate Setting</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                  <Plus size={16} className="rotate-45" />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Activity Description</label>
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-[11px] font-black text-app-slate uppercase tracking-[0.2em] ml-2">
+              <PencilLine size={14} className="text-app-bright" /> Description of Professional Activity
+            </label>
             <textarea
               name="activity"
               value={formData.activity}
               onChange={handleInputChange}
               required
-              placeholder="What did you do during these hours?"
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none h-24"
+              placeholder="Provide a professional summary of your work during this session..."
+              className="w-full p-8 rounded-[2.5rem] bg-white/60 border-none focus:ring-4 focus:ring-app-bright/10 outline-none h-40 font-medium text-app-dark shadow-inner placeholder:text-app-light/50"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tag Competencies</label>
-            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-slate-100 rounded-xl">
+          <div className="space-y-4">
+             <label className="flex items-center gap-2 text-[11px] font-black text-app-slate uppercase tracking-[0.2em] ml-2">
+              <Tag size={14} className="text-app-bright" /> Competency Alignment
+            </label>
+            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-6 bg-white/40 rounded-[2.5rem] border border-white/50 no-scrollbar shadow-inner">
               {ALL_COMPETENCIES.map(comp => (
                 <button
                   key={comp.id}
                   type="button"
                   onClick={() => toggleCompetency(comp.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  className={`px-4 py-2.5 rounded-2xl text-[10px] font-black transition-all border ${
                     formData.taggedCompetencyIds?.includes(comp.id)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      ? 'bg-app-dark text-white border-app-dark shadow-xl shadow-app-dark/20'
+                      : 'bg-white text-app-slate border-white/60 hover:border-app-light'
                   }`}
                 >
                   {comp.id}: {comp.title}
@@ -132,51 +155,51 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog }) => {
             </div>
           </div>
 
-          <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100">
-            Save Log Entry
+          <button type="submit" className="w-full py-6 bg-app-dark text-white rounded-[2rem] font-black uppercase text-sm tracking-[0.3em] shadow-2xl shadow-app-dark/40 active:scale-[0.98] transition-all hover:bg-black">
+            Archive Session to Log
           </button>
         </form>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-6 px-1">
         {logs.slice().reverse().map(log => (
-          <div key={log.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-wider">{log.date}</span>
-                <h4 className="text-lg font-bold text-slate-800 mt-2">{log.activity}</h4>
+          <div key={log.id} className="glass p-8 rounded-[3rem] shadow-sm hover:shadow-2xl hover:translate-x-1 transition-all group duration-300">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+              <div className="flex gap-5">
+                 <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-app-light group-hover:bg-app-bright group-hover:text-white transition-all duration-500">
+                    <Clock size={24} strokeWidth={2.5} />
+                 </div>
+                 <div>
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <span className="text-[11px] font-black text-app-bright bg-app-bright/5 border border-app-bright/10 px-3 py-1 rounded-lg uppercase tracking-widest">{log.date}</span>
+                      <span className="text-[11px] font-black text-app-slate bg-app-dark/5 px-3 py-1 rounded-lg uppercase tracking-widest flex items-center gap-2">
+                        <School size={12} strokeWidth={2.5} /> {log.schoolLevel}
+                      </span>
+                    </div>
+                    <h4 className="text-xl font-black text-app-dark leading-tight group-hover:text-app-bright transition-colors">{log.activity}</h4>
+                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-black text-slate-800">{log.hours}</span>
-                <span className="text-xs text-slate-400 block uppercase font-bold">Hours</span>
+              <div className="text-right glass-blue p-5 rounded-[2rem] min-w-[120px] shadow-sm">
+                <span className="text-4xl font-black text-app-dark tracking-tighter">{log.hours}</span>
+                <span className="text-[11px] text-app-slate block uppercase font-black tracking-widest opacity-60">Session Hours</span>
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 ml-1">
+              <div className="flex items-center gap-2 text-[10px] font-black text-app-light uppercase tracking-widest mr-2 opacity-50">
+                <Tag size={12} strokeWidth={3} /> Aligned:
+              </div>
               {log.taggedCompetencyIds.map(id => {
                 const comp = ALL_COMPETENCIES.find(c => c.id === id);
                 return (
-                  <span key={id} title={comp?.description} className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold border border-slate-200">
+                  <span key={id} title={comp?.description} className="px-3 py-1.5 glass text-app-slate rounded-xl text-[10px] font-black border border-white/50 shadow-sm hover:bg-white hover:text-app-bright transition-colors cursor-help">
                     {id}
                   </span>
                 );
               })}
             </div>
-            
-            <div className="flex items-center text-xs text-slate-400 space-x-4">
-              <span className="flex items-center"><span className="mr-1">🏫</span> {log.schoolLevel}</span>
-              {log.location && <span className="flex items-center"><span className="mr-1">📍</span> {log.location}</span>}
-            </div>
           </div>
         ))}
-
-        {logs.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-            <div className="text-4xl mb-4">✍️</div>
-            <h3 className="text-lg font-bold text-slate-600">No logs found</h3>
-            <p className="text-slate-400">Start by adding your first internship activity.</p>
-          </div>
-        )}
       </div>
     </div>
   );

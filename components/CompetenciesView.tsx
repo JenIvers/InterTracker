@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { AttainmentLevel, InternshipLog, Artifact } from '../types';
 import { ALL_COMPETENCIES } from '../constants';
+import { Target, Award, MessageSquare, CheckCircle2, ChevronRight, FileText, Info, X } from 'lucide-react';
 
 interface CompetenciesViewProps {
   progress: Record<string, AttainmentLevel>;
@@ -25,10 +25,10 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
 
   const getLevelColor = (level: AttainmentLevel) => {
     switch (level) {
-      case AttainmentLevel.EMERGING: return 'bg-red-400';
-      case AttainmentLevel.DEVELOPING: return 'bg-amber-400';
-      case AttainmentLevel.PROFICIENT: return 'bg-emerald-400';
-      case AttainmentLevel.EXEMPLARY: return 'bg-blue-400';
+      case AttainmentLevel.EMERGING: return 'bg-app-light';
+      case AttainmentLevel.DEVELOPING: return 'bg-app-slate';
+      case AttainmentLevel.PROFICIENT: return 'bg-app-deep';
+      case AttainmentLevel.EXEMPLARY: return 'bg-app-dark';
       default: return 'bg-slate-200';
     }
   };
@@ -37,67 +37,78 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
   const relevantLogs = editingCompId ? logs.filter(l => l.taggedCompetencyIds.includes(editingCompId)) : [];
 
   return (
-    <div className="space-y-6 pb-20">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="space-y-8 pb-24 md:pb-8">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800">Framework</h2>
-          <p className="text-slate-500 text-sm">Track mastery and synthesize evidence.</p>
+          <div className="flex items-center gap-3 mb-2">
+             <div className="p-2 rounded-xl glass-blue">
+               <Target className="text-app-dark" size={24} />
+             </div>
+             <h2 className="text-3xl font-black text-app-dark tracking-tight">Competency Progress</h2>
+          </div>
+          <p className="text-app-slate text-sm font-bold opacity-70">Cataloging proof of administrative capability.</p>
         </div>
-        <div className="flex space-x-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex gap-4 glass p-3 rounded-2xl shadow-sm overflow-x-auto no-scrollbar border border-white/50">
           {levels.map(l => (
-            <div key={l} className="flex items-center space-x-1 shrink-0">
-              <div className={`w-2 h-2 rounded-full ${getLevelColor(l)}`}></div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase">{l}</span>
+            <div key={l} className="flex items-center space-x-2 shrink-0">
+              <div className={`w-3 h-3 rounded-full ${getLevelColor(l)} shadow-sm`}></div>
+              <span className="text-[10px] font-black text-app-slate uppercase tracking-widest opacity-80">{l}</span>
             </div>
           ))}
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-5 px-1">
         {ALL_COMPETENCIES.map(comp => {
           const artifactCount = artifacts.filter(a => a.taggedCompetencyIds?.includes(comp.id)).length;
           const hasReflection = !!competencyReflections[comp.id];
+          const currentLevel = progress[comp.id];
           
           return (
-            <div key={comp.id} className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center flex-wrap gap-2 mb-1">
-                    <span className="text-[10px] font-black text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded uppercase leading-none">{comp.id}</span>
-                    <h4 className="font-bold text-slate-800 text-sm">{comp.title}</h4>
-                    {artifactCount > 0 && (
-                      <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                        {artifactCount} Proofs
-                      </span>
-                    )}
-                    {hasReflection && (
-                      <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                        Reflected
-                      </span>
-                    )}
+            <div key={comp.id} className="glass p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:translate-x-1 transition-all duration-300 group">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center flex-wrap gap-3">
+                    <span className="text-[11px] font-black text-app-bright border border-app-bright/20 px-3 py-1 rounded-xl uppercase bg-app-bright/5">{comp.id}</span>
+                    <h4 className="font-black text-app-dark text-lg tracking-tight group-hover:text-app-bright transition-colors">{comp.title}</h4>
+                    
+                    <div className="flex items-center gap-2">
+                      {artifactCount > 0 && (
+                        <div className="bg-app-bright/10 text-app-bright text-[10px] px-3 py-1.5 rounded-full font-black uppercase flex items-center gap-1.5 border border-app-bright/10 shadow-sm">
+                          <CheckCircle2 size={12} strokeWidth={3} /> {artifactCount} Proofs
+                        </div>
+                      )}
+                      {hasReflection && (
+                        <div className="bg-app-dark/5 text-app-dark text-[10px] px-3 py-1.5 rounded-full font-black uppercase flex items-center gap-1.5 border border-app-dark/10 shadow-sm">
+                          <MessageSquare size={12} strokeWidth={3} /> Reflected
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-500 leading-relaxed">{comp.description}</p>
+                  <p className="text-sm text-app-deep/70 leading-relaxed font-medium">{comp.description}</p>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   <button 
                     onClick={() => setEditingCompId(comp.id)}
-                    className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
+                    className="w-12 h-12 flex items-center justify-center glass-blue text-app-dark rounded-2xl hover:bg-app-bright hover:text-white transition-all shadow-lg active:scale-90"
+                    title="Reflection & Evidence"
                   >
-                    Reflect
+                    <FileText size={20} strokeWidth={2.5} />
                   </button>
-                  <div className="flex space-x-1 bg-slate-50 p-1 rounded-2xl border border-slate-100">
+                  <div className="flex space-x-2 glass p-2 rounded-2xl border border-white/50 shadow-inner">
                     {levels.map(level => {
-                      const isActive = progress[comp.id] === level;
+                      const isActive = currentLevel === level;
                       return (
                         <button
                           key={level}
                           onClick={() => onUpdateProgress(comp.id, level)}
-                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                          className={`w-10 h-10 rounded-xl text-[11px] font-black transition-all flex items-center justify-center ${
                             isActive 
-                              ? `${getLevelColor(level)} text-white shadow-md scale-105`
-                              : 'text-slate-300 hover:text-slate-600'
+                              ? `${getLevelColor(level)} text-white shadow-xl scale-110 ring-4 ring-white/30`
+                              : 'text-app-light hover:text-app-slate'
                           }`}
+                          title={level}
                         >
                           {level.charAt(0)}
                         </button>
@@ -111,60 +122,77 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
         })}
       </div>
 
-      {/* Manual Synthesis Reflection Modal */}
+      {/* Synthesis Modal */}
       {editingCompId && (
         <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setEditingCompId(null)}></div>
-          <div className="relative bg-white w-full max-w-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-10">
-            <header className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+          <div className="absolute inset-0 bg-app-dark/60 backdrop-blur-xl" onClick={() => setEditingCompId(null)}></div>
+          <div className="relative glass w-full max-w-3xl sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-12 duration-500">
+            <header className="p-10 border-b border-white/20 flex items-center justify-between sticky top-0 bg-white/70 z-10">
               <div>
-                <h3 className="text-lg font-black text-slate-800">Standard Synthesis</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{editingCompId}: {ALL_COMPETENCIES.find(c => c.id === editingCompId)?.title}</p>
+                <h3 className="text-2xl font-black text-app-dark tracking-tight">Standard Synthesis</h3>
+                <div className="flex items-center gap-3 mt-2">
+                   <span className="text-[11px] font-black text-app-bright bg-app-bright/10 px-3 py-1 rounded-lg uppercase tracking-widest">{editingCompId}</span>
+                   <p className="text-xs font-bold text-app-slate uppercase tracking-widest truncate max-w-xs">{ALL_COMPETENCIES.find(c => c.id === editingCompId)?.title}</p>
+                </div>
               </div>
-              <button onClick={() => setEditingCompId(null)} className="p-2 text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+              <button onClick={() => setEditingCompId(null)} className="p-4 bg-app-dark/5 text-app-dark hover:bg-app-dark hover:text-white rounded-[1.5rem] transition-all active:scale-90 shadow-sm">
+                <X size={22} strokeWidth={3} />
+              </button>
             </header>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Evidence Summary Section */}
+            <div className="flex-1 overflow-y-auto p-10 space-y-12 no-scrollbar">
               <section>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Linked Activity Logs</h4>
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="w-8 h-8 rounded-xl glass-blue flex items-center justify-center">
+                     <CheckCircle2 size={16} className="text-app-bright" strokeWidth={3} />
+                   </div>
+                   <h4 className="text-[12px] font-black text-app-dark uppercase tracking-[0.2em]">Connected Activity Logs</h4>
+                </div>
                 {relevantLogs.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-4">
                     {relevantLogs.map(log => (
-                      <div key={log.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
-                        <div className="flex justify-between font-bold text-slate-500 mb-1">
-                          <span>{log.date}</span>
-                          <span>{log.hours}h</span>
+                      <div key={log.id} className="p-6 bg-white/40 rounded-[2rem] border border-white/50 text-xs shadow-sm group hover:bg-white/60 transition-colors">
+                        <div className="flex justify-between font-black text-app-slate mb-3 uppercase tracking-tight">
+                          <span className="bg-app-slate/10 px-3 py-1 rounded-lg">{log.date}</span>
+                          <span className="text-app-bright font-black">{log.hours}h Active</span>
                         </div>
-                        <p className="text-slate-700 font-medium">{log.activity}</p>
+                        <p className="text-app-dark font-bold leading-relaxed text-sm">{log.activity}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 italic">No specific activities logged for this standard yet.</p>
+                  <div className="p-10 bg-app-dark/5 rounded-[2.5rem] border border-dashed border-app-slate/30 text-center">
+                    <p className="text-sm text-app-slate font-bold italic opacity-60">No activity logs tagged for this standard yet.</p>
+                  </div>
                 )}
               </section>
 
-              {/* Reflection Entry Section */}
               <section>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Synthesis Reflection</h4>
-                <p className="text-xs text-slate-500 mb-4">Summarize your growth and how you demonstrated this competency across your logs.</p>
-                <textarea
-                  autoFocus
-                  value={currentReflection}
-                  onChange={(e) => onUpdateReflection(editingCompId, e.target.value)}
-                  placeholder="Type your professional reflection here..."
-                  className="w-full h-48 p-4 bg-blue-50 border-none rounded-3xl text-sm text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-blue-200"
-                />
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="w-8 h-8 rounded-xl glass-blue flex items-center justify-center">
+                     <MessageSquare size={16} className="text-app-bright" strokeWidth={3} />
+                   </div>
+                   <h4 className="text-[12px] font-black text-app-dark uppercase tracking-[0.2em]">Synthesis & Growth Reflection</h4>
+                </div>
+                <div className="relative">
+                  <textarea
+                    autoFocus
+                    value={currentReflection}
+                    onChange={(e) => onUpdateReflection(editingCompId, e.target.value)}
+                    placeholder="Reflect on your growth. How does this evidence prove you have mastered this standard? What were your key learnings?"
+                    className="w-full h-72 p-8 bg-white/60 border border-white/50 rounded-[2.5rem] text-base text-app-dark focus:ring-4 focus:ring-app-bright/10 focus:border-app-bright outline-none placeholder:text-app-light font-medium leading-relaxed transition-all shadow-inner"
+                  />
+                  <div className="absolute bottom-6 right-8 text-[10px] font-black text-app-light uppercase tracking-widest pointer-events-none">Autosaved</div>
+                </div>
               </section>
             </div>
 
-            <footer className="p-6 bg-slate-50 border-t border-slate-100">
+            <footer className="p-10 bg-white/70 border-t border-white/20 backdrop-blur-md">
               <button 
                 onClick={() => setEditingCompId(null)}
-                className="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-all"
+                className="w-full bg-app-dark text-white py-6 rounded-[2rem] font-black uppercase text-sm tracking-[0.25em] shadow-2xl shadow-app-dark/40 hover:bg-app-deep active:scale-[0.98] transition-all"
               >
-                Save Reflection
+                Archive Synthesis
               </button>
             </footer>
           </div>
