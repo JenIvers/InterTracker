@@ -8,11 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm run build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_INTERN_PRO_APP }}'
           projectId: intern-pro-app
-          # By NOT specifying 'channelId: live', it defaults to a preview channel
-          # expiresIn: 7d # Optional: how long the preview URL lasts
+          channelId: preview-${{ github.sha }}
+          expiresIn: 7d
