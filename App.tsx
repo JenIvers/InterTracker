@@ -14,6 +14,7 @@ const STORAGE_KEY = 'internship_tracker_data_v7';
 const App: React.FC = () => {
   const [currentView, setView] = useState<string>('dashboard');
   const [isLoading, setIsLoading] = useState(true);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [state, setState] = useState<AppState>({
     logs: [],
     artifacts: [],
@@ -28,6 +29,19 @@ const App: React.FC = () => {
   useEffect(() => {
     const initData = async () => {
       try {
+        const params = new URLSearchParams(window.location.search);
+        const viewId = params.get('view');
+        
+        if (viewId) {
+          setIsReadOnly(true);
+          const sharedData = await loadStateFromFirestore(); // In a real app, use viewId here
+          if (sharedData) {
+            setState(sharedData);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const firestoreData = await loadStateFromFirestore();
         if (firestoreData) {
           setState(firestoreData);
@@ -67,7 +81,7 @@ const App: React.FC = () => {
 
   // Sync to Firestore and LocalStorage (with debounce)
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isReadOnly) return;
 
     const timeoutId = setTimeout(() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -75,7 +89,7 @@ const App: React.FC = () => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [state, isLoading]);
+  }, [state, isLoading, isReadOnly]);
 
   const addLog = (log: InternshipLog) => {
     setState(prev => ({ ...prev, logs: [...prev.logs, log] }));
@@ -132,10 +146,11 @@ const App: React.FC = () => {
             progress={state.progress} 
             primarySetting={state.primarySetting}
             onSetPrimarySetting={setPrimarySetting}
+            isReadOnly={isReadOnly}
           />
         );
       case 'logs':
-        return <LogsView logs={state.logs} onAddLog={addLog} />;
+        return <LogsView logs={state.logs} onAddLog={addLog} isReadOnly={isReadOnly} />;
       case 'competencies':
         return (
           <CompetenciesView 
@@ -145,6 +160,7 @@ const App: React.FC = () => {
             competencyReflections={state.competencyReflections}
             onUpdateProgress={updateProgress}
             onUpdateReflection={updateCompetencyReflection}
+            isReadOnly={isReadOnly}
           />
         );
       case 'artifacts':
@@ -155,6 +171,7 @@ const App: React.FC = () => {
             onAddArtifact={addArtifact} 
             onUpdateArtifact={updateArtifact}
             onAddShelf={addShelf}
+            isReadOnly={isReadOnly}
           />
         );
       case 'sites':
@@ -163,6 +180,7 @@ const App: React.FC = () => {
             sites={state.sites}
             onAddSite={addSite}
             onRemoveSite={removeSite}
+            isReadOnly={isReadOnly}
           />
         );
       default:
@@ -172,6 +190,7 @@ const App: React.FC = () => {
             progress={state.progress} 
             primarySetting={state.primarySetting}
             onSetPrimarySetting={setPrimarySetting}
+            isReadOnly={isReadOnly}
           />
         );
     }
@@ -179,14 +198,16 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar currentView={currentView} setView={setView} />
+      <Sidebar currentView={currentView} setView={setView} isReadOnly={isReadOnly} />
       
       <main className="flex-1 md:ml-64 p-4 md:p-8 max-w-7xl mx-auto w-full pb-24 md:pb-8">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <div className="flex flex-col items-center gap-4">
                <div className="w-12 h-12 border-4 border-app-bright border-t-transparent rounded-full animate-spin"></div>
-               <p className="text-app-slate font-black uppercase tracking-widest text-xs">Syncing Portfolio...</p>
+               <p className="text-app-slate font-black uppercase tracking-widest text-xs">
+                 {isReadOnly ? 'Loading Portfolio...' : 'Syncing Portfolio...'}
+               </p>
             </div>
           </div>
         ) : (
@@ -199,6 +220,9 @@ const App: React.FC = () => {
                 </h1>
               </div>
               <div className="flex items-center gap-2 text-right">
+                {isReadOnly && (
+                  <span className="bg-app-bright/10 text-app-bright text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest mr-2">Viewer Mode</span>
+                )}
                 <span className="text-[10px] text-app-slate font-black uppercase tracking-widest opacity-70">Bethel University</span>
               </div>
             </div>
@@ -208,9 +232,9 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <BottomNav currentView={currentView} setView={setView} />
+      <BottomNav currentView={currentView} setView={setView} isReadOnly={isReadOnly} />
 
-      {(currentView === 'dashboard' || currentView === 'sites') && (
+      {!isReadOnly && (currentView === 'dashboard' || currentView === 'sites') && (
         <div className="md:hidden fixed bottom-20 right-6 z-40">
           <button 
             onClick={() => setView('logs')}

@@ -8,9 +8,10 @@ interface DashboardProps {
   progress: Record<string, AttainmentLevel>;
   primarySetting: 'Primary' | 'Secondary';
   onSetPrimarySetting: (setting: 'Primary' | 'Secondary') => void;
+  isReadOnly?: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ logs, progress, primarySetting, onSetPrimarySetting }) => {
+const Dashboard: React.FC<DashboardProps> = ({ logs, progress, primarySetting, onSetPrimarySetting, isReadOnly }) => {
   const totalHours = logs.reduce((acc, log) => acc + log.hours, 0);
   const targetTotal = 320;
   const progressPercent = Math.min(100, Math.round((totalHours / targetTotal) * 100));
@@ -124,20 +125,22 @@ const Dashboard: React.FC<DashboardProps> = ({ logs, progress, primarySetting, o
             <h3 className="text-2xl font-black text-app-dark tracking-tight">Institutional Placements</h3>
             <p className="text-app-slate text-sm font-bold opacity-60">Meeting the 240 / 40 / 40 hour distribution.</p>
           </div>
-          <div className="inline-flex glass p-1.5 rounded-2xl shadow-lg shadow-app-dark/5">
-            <button 
-              onClick={() => onSetPrimarySetting('Secondary')}
-              className={`px-8 py-2.5 rounded-xl text-[11px] font-black transition-all ${primarySetting === 'Secondary' ? 'bg-app-dark text-white shadow-xl shadow-[#14293033]' : 'text-app-slate hover:text-app-dark'}`}
-            >
-              Secondary Site
-            </button>
-            <button 
-              onClick={() => onSetPrimarySetting('Primary')}
-              className={`px-8 py-2.5 rounded-xl text-[11px] font-black transition-all ${primarySetting === 'Primary' ? 'bg-app-dark text-white shadow-xl shadow-[#14293033]' : 'text-app-slate hover:text-app-dark'}`}
-            >
-              Primary Site
-            </button>
-          </div>
+          {!isReadOnly && (
+            <div className="inline-flex glass p-1.5 rounded-2xl shadow-lg shadow-app-dark/5">
+              <button 
+                onClick={() => onSetPrimarySetting('Secondary')}
+                className={`px-8 py-2.5 rounded-xl text-[11px] font-black transition-all ${primarySetting === 'Secondary' ? 'bg-app-dark text-white shadow-xl shadow-[#14293033]' : 'text-app-slate hover:text-app-dark'}`}
+              >
+                Secondary Site
+              </button>
+              <button 
+                onClick={() => onSetPrimarySetting('Primary')}
+                className={`px-8 py-2.5 rounded-xl text-[11px] font-black transition-all ${primarySetting === 'Primary' ? 'bg-app-dark text-white shadow-xl shadow-[#14293033]' : 'text-app-slate hover:text-app-dark'}`}
+              >
+                Primary Site
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

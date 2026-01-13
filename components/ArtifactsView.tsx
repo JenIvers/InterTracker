@@ -9,12 +9,15 @@ interface ArtifactsViewProps {
   onAddArtifact: (artifact: Artifact) => void;
   onUpdateArtifact: (artifact: Artifact) => void;
   onAddShelf: (name: string) => void;
+  isReadOnly?: boolean;
 }
 
 const ArtifactCard: React.FC<{ 
   artifact: Artifact, 
   onSelect: (artifact: Artifact) => void 
 }> = ({ artifact, onSelect }) => (
+// ... (omitting lines for brevity, wait no I shouldn't)
+// I will just use write_file.
   <div 
     onClick={() => onSelect(artifact)}
     className="glass rounded-[2.5rem] border border-white/50 overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.03] transition-all active:scale-95 cursor-pointer group animate-in zoom-in-95 duration-300"
@@ -92,7 +95,8 @@ const ArtifactsView: React.FC<ArtifactsViewProps> = ({
   shelves, 
   onAddArtifact, 
   onUpdateArtifact,
-  onAddShelf 
+  onAddShelf,
+  isReadOnly
 }) => {
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
   const [isCreatingShelf, setIsCreatingShelf] = useState(false);
@@ -154,17 +158,21 @@ const ArtifactsView: React.FC<ArtifactsViewProps> = ({
             <p className="text-app-slate text-base font-bold opacity-70">Curate evidence of your administrative journey.</p>
           </div>
           <div className="flex gap-4">
-            <button 
-              onClick={() => setIsCreatingShelf(true)}
-              className="w-14 h-14 glass text-app-slate hover:text-app-bright rounded-[1.5rem] shadow-xl flex items-center justify-center transition-all active:scale-90 border border-white/50"
-              title="Create New Portfolio Shelf"
-            >
-              <FolderPlus size={26} />
-            </button>
-            <label className="w-14 h-14 bg-app-dark text-white rounded-[1.5rem] shadow-2xl shadow-app-dark/30 flex items-center justify-center cursor-pointer hover:bg-app-deep transition-all active:scale-90">
-              <Plus size={32} strokeWidth={3} />
-              <input type="file" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
-            </label>
+            {!isReadOnly && (
+              <>
+                <button 
+                  onClick={() => setIsCreatingShelf(true)}
+                  className="w-14 h-14 glass text-app-slate hover:text-app-bright rounded-[1.5rem] shadow-xl flex items-center justify-center transition-all active:scale-90 border border-white/50"
+                  title="Create New Portfolio Shelf"
+                >
+                  <FolderPlus size={26} />
+                </button>
+                <label className="w-14 h-14 bg-app-dark text-white rounded-[1.5rem] shadow-2xl shadow-app-dark/30 flex items-center justify-center cursor-pointer hover:bg-app-deep transition-all active:scale-90">
+                  <Plus size={32} strokeWidth={3} />
+                  <input type="file" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
+                </label>
+              </>
+            )}
           </div>
         </div>
 
@@ -247,16 +255,16 @@ const ArtifactsView: React.FC<ArtifactsViewProps> = ({
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <button
-                      onClick={() => moveArtifactToShelf(selectedArtifact, undefined)}
-                      className={`px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${!selectedArtifact.shelfId ? 'bg-app-dark text-white shadow-xl shadow-app-dark/20' : 'glass text-app-slate border border-white/50 hover:bg-white'}`}
+                      onClick={() => !isReadOnly && moveArtifactToShelf(selectedArtifact, undefined)}
+                      className={`px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${!selectedArtifact.shelfId ? 'bg-app-dark text-white shadow-xl shadow-app-dark/20' : 'glass text-app-slate border border-white/50 hover:bg-white'} ${isReadOnly ? 'cursor-default' : ''}`}
                     >
                       Unshelved
                     </button>
                     {shelves.map(shelf => (
                       <button
                         key={shelf.id}
-                        onClick={() => moveArtifactToShelf(selectedArtifact, shelf.id)}
-                        className={`px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${selectedArtifact.shelfId === shelf.id ? 'bg-app-bright text-white shadow-xl shadow-app-bright/20' : 'glass text-app-slate border border-white/50 hover:bg-white'}`}
+                        onClick={() => !isReadOnly && moveArtifactToShelf(selectedArtifact, shelf.id)}
+                        className={`px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${selectedArtifact.shelfId === shelf.id ? 'bg-app-bright text-white shadow-xl shadow-app-bright/20' : 'glass text-app-slate border border-white/50 hover:bg-white'} ${isReadOnly ? 'cursor-default' : ''}`}
                       >
                         {shelf.name}
                       </button>
@@ -277,10 +285,10 @@ const ArtifactsView: React.FC<ArtifactsViewProps> = ({
                       return (
                         <button
                           key={comp.id}
-                          onClick={() => toggleCompetencyTag(selectedArtifact, comp.id)}
+                          onClick={() => !isReadOnly && toggleCompetencyTag(selectedArtifact, comp.id)}
                           className={`text-left p-5 rounded-[2rem] border transition-all flex items-start gap-5 ${
                             isTagged ? 'bg-app-bright/10 border-app-bright shadow-sm' : 'bg-white/40 border-white/50 hover:bg-white'
-                          }`}
+                          } ${isReadOnly ? 'cursor-default' : ''}`}
                         >
                           <div className={`mt-1 w-6 h-6 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                             isTagged ? 'border-app-dark bg-app-dark text-white' : 'border-app-light'
@@ -304,7 +312,7 @@ const ArtifactsView: React.FC<ArtifactsViewProps> = ({
                 onClick={() => setSelectedArtifact(null)}
                 className="w-full bg-app-dark text-white py-6 rounded-[2.5rem] font-black uppercase text-sm tracking-[0.4em] shadow-2xl hover:bg-black transition-all active:scale-[0.98]"
               >
-                Sync Artifact Updates
+                {isReadOnly ? 'Close Artifact' : 'Sync Artifact Updates'}
               </button>
             </footer>
           </div>

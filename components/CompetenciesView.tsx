@@ -10,6 +10,7 @@ interface CompetenciesViewProps {
   competencyReflections: Record<string, string>;
   onUpdateProgress: (id: string, level: AttainmentLevel) => void;
   onUpdateReflection: (id: string, reflection: string) => void;
+  isReadOnly?: boolean;
 }
 
 const CompetenciesView: React.FC<CompetenciesViewProps> = ({ 
@@ -18,7 +19,8 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
   artifacts, 
   competencyReflections,
   onUpdateProgress,
-  onUpdateReflection
+  onUpdateReflection,
+  isReadOnly
 }) => {
   const [editingCompId, setEditingCompId] = useState<string | null>(null);
   const levels = Object.values(AttainmentLevel);
@@ -102,12 +104,12 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
                       return (
                         <button
                           key={level}
-                          onClick={() => onUpdateProgress(comp.id, level)}
+                          onClick={() => !isReadOnly && onUpdateProgress(comp.id, level)}
                           className={`w-10 h-10 rounded-xl text-[11px] font-black transition-all flex items-center justify-center ${
                             isActive 
                               ? `${getLevelColor(level)} text-white shadow-xl scale-110 ring-4 ring-white/30`
                               : 'text-app-light hover:text-app-slate'
-                          }`}
+                          } ${isReadOnly ? 'cursor-default' : ''}`}
                           title={level}
                         >
                           {level.charAt(0)}
@@ -175,14 +177,22 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
                    <h4 className="text-[12px] font-black text-app-dark uppercase tracking-[0.2em]">Synthesis & Growth Reflection</h4>
                 </div>
                 <div className="relative">
-                  <textarea
-                    autoFocus
-                    value={currentReflection}
-                    onChange={(e) => onUpdateReflection(editingCompId, e.target.value)}
-                    placeholder="Reflect on your growth. How does this evidence prove you have mastered this standard? What were your key learnings?"
-                    className="w-full h-72 p-8 bg-white/60 border border-white/50 rounded-[2.5rem] text-base text-app-dark focus:ring-4 focus:ring-app-bright/10 focus:border-app-bright outline-none placeholder:text-app-light font-medium leading-relaxed transition-all shadow-inner"
-                  />
-                  <div className="absolute bottom-6 right-8 text-[10px] font-black text-app-light uppercase tracking-widest pointer-events-none">Autosaved</div>
+                  {isReadOnly ? (
+                    <div className="w-full min-h-[200px] p-8 bg-white/60 border border-white/50 rounded-[2.5rem] text-base text-app-dark font-medium leading-relaxed shadow-inner">
+                      {currentReflection || <span className="italic opacity-50 text-app-slate">No reflection provided for this competency yet.</span>}
+                    </div>
+                  ) : (
+                    <>
+                      <textarea
+                        autoFocus
+                        value={currentReflection}
+                        onChange={(e) => onUpdateReflection(editingCompId, e.target.value)}
+                        placeholder="Reflect on your growth. How does this evidence prove you have mastered this standard? What were your key learnings?"
+                        className="w-full h-72 p-8 bg-white/60 border border-white/50 rounded-[2.5rem] text-base text-app-dark focus:ring-4 focus:ring-app-bright/10 focus:border-app-bright outline-none placeholder:text-app-light font-medium leading-relaxed transition-all shadow-inner"
+                      />
+                      <div className="absolute bottom-6 right-8 text-[10px] font-black text-app-light uppercase tracking-widest pointer-events-none">Autosaved</div>
+                    </>
+                  )}
                 </div>
               </section>
             </div>
@@ -192,7 +202,7 @@ const CompetenciesView: React.FC<CompetenciesViewProps> = ({
                 onClick={() => setEditingCompId(null)}
                 className="w-full bg-app-dark text-white py-6 rounded-[2rem] font-black uppercase text-sm tracking-[0.25em] shadow-2xl shadow-app-dark/40 hover:bg-app-deep active:scale-[0.98] transition-all"
               >
-                Archive Synthesis
+                {isReadOnly ? 'Close Synthesis' : 'Archive Synthesis'}
               </button>
             </footer>
           </div>

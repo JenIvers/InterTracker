@@ -6,9 +6,10 @@ import { Clock, Calendar, School, Plus, PencilLine, Tag, Timer, X } from 'lucide
 interface LogsViewProps {
   logs: InternshipLog[];
   onAddLog: (log: InternshipLog) => void;
+  isReadOnly?: boolean;
 }
 
-const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog }) => {
+const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<InternshipLog>>({
     date: new Date().toISOString().split('T')[0],
@@ -30,8 +31,8 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog }) => {
   const toggleCompetency = (id: string) => {
     setFormData(prev => {
       const current = prev.taggedCompetencyIds || [];
-      const next = current.includes(id) 
-        ? current.filter(cid => cid !== id) 
+      const next = current.includes(id)
+        ? current.filter(cid => cid !== id)
         : [...current, id];
       return { ...prev, taggedCompetencyIds: next };
     });
@@ -74,19 +75,20 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog }) => {
           <h2 className="text-3xl font-black text-app-dark tracking-tight">Activity Log</h2>
           <p className="text-app-slate text-base font-bold opacity-70">Cataloging real-world leadership moments.</p>
         </div>
-        <button
-          onClick={() => setIsAdding(!isAdding)}
-          className={`px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 shadow-2xl ${
-            isAdding 
-              ? 'bg-white text-app-dark border border-white/50' 
-              : 'bg-app-dark text-white shadow-app-dark/30 hover:scale-105 active:scale-95'
-          }`}
-        >
-          {isAdding ? <X size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
-          <span>{isAdding ? 'Close' : 'New Entry'}</span>
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={() => setIsAdding(!isAdding)}
+            className={`px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 shadow-2xl ${
+              isAdding 
+                ? 'bg-white text-app-dark border border-white/50' 
+                : 'bg-app-dark text-white shadow-app-dark/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            {isAdding ? <X size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
+            <span>{isAdding ? 'Close' : 'New Entry'}</span>
+          </button>
+        )}
       </div>
-
       {isAdding && (
         <form onSubmit={handleSubmit} className="glass p-10 rounded-[3.5rem] shadow-2xl border border-white/60 space-y-10 animate-in fade-in slide-in-from-top-6 duration-500">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

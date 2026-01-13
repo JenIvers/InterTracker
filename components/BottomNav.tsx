@@ -4,6 +4,7 @@ import { LayoutDashboard, Clock, Target, Folder, School } from 'lucide-react';
 interface BottomNavProps {
   currentView: string;
   setView: (view: string) => void;
+  isReadOnly?: boolean;
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {

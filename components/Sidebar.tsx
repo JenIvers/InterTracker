@@ -4,9 +4,10 @@ import { LayoutDashboard, Clock, Target, Folder, School } from 'lucide-react';
 interface SidebarProps {
   currentView: string;
   setView: (view: string) => void;
+  isReadOnly?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isReadOnly }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'logs', label: 'Activity Log', icon: Clock },
@@ -49,8 +50,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
         <div className="glass-blue rounded-2xl p-4">
           <p className="text-[10px] font-black text-app-deep uppercase tracking-widest mb-1 opacity-60">Status</p>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-app-bright animate-pulse shadow-[0_0_8px_rgba(66,131,164,0.5)]" />
-            <p className="text-xs font-bold text-app-dark">Cloud Syncing</p>
+            <div className={`w-2.5 h-2.5 rounded-full ${isReadOnly ? 'bg-amber-400' : 'bg-app-bright animate-pulse'} shadow-sm`} />
+            <p className="text-xs font-bold text-app-dark">{isReadOnly ? 'Viewer Mode' : 'Cloud Syncing'}</p>
           </div>
         </div>
       </div>

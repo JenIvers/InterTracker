@@ -6,9 +6,10 @@ interface SitesViewProps {
   sites: Site[];
   onAddSite: (site: Site) => void;
   onRemoveSite: (id: string) => void;
+  isReadOnly?: boolean;
 }
 
-const SitesView: React.FC<SitesViewProps> = ({ sites, onAddSite, onRemoveSite }) => {
+const SitesView: React.FC<SitesViewProps> = ({ sites, onAddSite, onRemoveSite, isReadOnly }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<Site>>({
     name: '',
@@ -41,19 +42,21 @@ const SitesView: React.FC<SitesViewProps> = ({ sites, onAddSite, onRemoveSite })
           <h2 className="text-3xl font-black text-app-dark tracking-tight">Placement Sites</h2>
           <p className="text-app-slate text-base font-bold opacity-70">Cataloging institutional mentorship locations.</p>
         </div>
-        <button 
-          onClick={() => setIsAdding(!isAdding)}
-          className={`w-16 h-16 rounded-[2rem] shadow-2xl transition-all flex items-center justify-center active:scale-90 ${
-            isAdding 
-              ? 'glass text-app-dark border border-white/60' 
-              : 'bg-app-dark text-white shadow-app-dark/30 hover:rotate-90'
-          }`}
-        >
-          {isAdding ? <X size={24} strokeWidth={3} /> : <Plus size={28} strokeWidth={3} />}
-        </button>
+        {!isReadOnly && (
+          <button 
+            onClick={() => setIsAdding(!isAdding)}
+            className={`w-16 h-16 rounded-[2rem] shadow-2xl transition-all flex items-center justify-center active:scale-90 ${
+              isAdding 
+                ? 'glass text-app-dark border border-white/60' 
+                : 'bg-app-dark text-white shadow-app-dark/30 hover:rotate-90'
+            }`}
+          >
+            {isAdding ? <X size={24} strokeWidth={3} /> : <Plus size={28} strokeWidth={3} />}
+          </button>
+        )}
       </header>
 
-      {isAdding && (
+      {isAdding && !isReadOnly && (
         <form onSubmit={handleSubmit} className="glass p-12 rounded-[3.5rem] border border-white/60 shadow-2xl space-y-10 animate-in zoom-in-95 duration-500">
           <div className="space-y-8">
             <div className="space-y-3">
@@ -134,13 +137,15 @@ const SitesView: React.FC<SitesViewProps> = ({ sites, onAddSite, onRemoveSite })
             </div>
 
             <div className="mt-10 flex justify-end">
-              <button 
-                onClick={() => onRemoveSite(site.id)}
-                className="w-12 h-12 flex items-center justify-center text-app-light hover:text-red-500 bg-app-dark/5 hover:bg-red-50 rounded-2xl transition-all shadow-sm active:scale-90"
-                title="Decommission Placement Record"
-              >
-                <Trash2 size={20} />
-              </button>
+              {!isReadOnly && (
+                <button 
+                  onClick={() => onRemoveSite(site.id)}
+                  className="w-12 h-12 flex items-center justify-center text-app-light hover:text-red-500 bg-app-dark/5 hover:bg-red-50 rounded-2xl transition-all shadow-sm active:scale-90"
+                  title="Decommission Placement Record"
+                >
+                  <Trash2 size={20} />
+                </button>
+              )}
             </div>
           </div>
         ))}
