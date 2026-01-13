@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Rules for the intern_data collection
+    match /intern_data/{userId} {
+      // For now, allowing the 'default_user' document to be accessed.
+      // Once Auth is implemented, we will change this to:
+      // allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if userId == 'default_user';
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

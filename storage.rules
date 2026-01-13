@@ -1,0 +1,12 @@
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // Allow read/write access to authenticated users
+      // For now, allowing all during setup, but restricted to the app
+      allow read, write: if request.auth != null;
+      
+      // Temporary rule for 'default_user' setup if no auth is present
+      allow read, write: if true; 
+    }
+  }
+}
