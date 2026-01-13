@@ -1,7 +1,20 @@
-import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged, User } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut, onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "./firebase";
 
 const provider = new GoogleAuthProvider();
+
+export const checkRedirectResult = async (): Promise<User | null> => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      return result.user;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error handling redirect result:", error);
+    return null;
+  }
+};
 
 export const signInWithGoogle = async (): Promise<void> => {
   try {

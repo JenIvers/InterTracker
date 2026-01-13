@@ -9,7 +9,7 @@ import SitesView from './components/SitesView';
 import LoginView from './components/LoginView';
 import { AppState, InternshipLog, AttainmentLevel, Artifact, Shelf, Site } from './types';
 import { loadStateFromFirestore, saveStateToFirestore } from './firestoreService';
-import { subscribeToAuthChanges } from './authService';
+import { subscribeToAuthChanges, checkRedirectResult } from './authService';
 import { User } from 'firebase/auth';
 import logo from './bethel-logo.png';
 
@@ -30,6 +30,13 @@ const App: React.FC = () => {
 
   // Auth Subscription
   useEffect(() => {
+    // Check for redirect result first (for mobile flows)
+    checkRedirectResult().then((redirectUser) => {
+        if (redirectUser) {
+            setUser(redirectUser);
+        }
+    });
+
     const unsubscribe = subscribeToAuthChanges((currentUser) => {
       setUser(currentUser);
     });
