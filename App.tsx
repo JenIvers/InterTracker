@@ -79,8 +79,28 @@ const App: React.FC = () => {
             console.log("Loading editor mode data for:", currentUser.uid);
             setIsReadOnly(false);
             const firestoreData = await loadStateFromFirestore(currentUser.uid);
-            if (isMounted && firestoreData) {
-              setState(firestoreData);
+            if (isMounted) {
+              if (firestoreData) {
+                // If we have existing data, make sure the profile is up to date
+                setState({
+                  ...firestoreData,
+                  userProfile: {
+                    displayName: currentUser.displayName,
+                    email: currentUser.email,
+                    photoURL: currentUser.photoURL
+                  }
+                });
+              } else {
+                // Initialize with user profile
+                setState(prev => ({
+                  ...prev,
+                  userProfile: {
+                    displayName: currentUser.displayName,
+                    email: currentUser.email,
+                    photoURL: currentUser.photoURL
+                  }
+                }));
+              }
             }
             setIsLoading(false);
           } else {
@@ -242,7 +262,7 @@ const App: React.FC = () => {
         setView={setView} 
         isReadOnly={isReadOnly} 
         userId={user?.uid} 
-        user={user}
+        user={isReadOnly ? state.userProfile : user}
       />
       
       <main className="flex-1 md:ml-64 p-4 md:p-8 max-w-7xl mx-auto w-full pb-24 md:pb-8">
@@ -268,14 +288,14 @@ const App: React.FC = () => {
                 {isReadOnly && (
                   <span className="bg-app-bright/10 text-app-bright text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest mr-2">Viewer Mode</span>
                 )}
-                {user && !isReadOnly ? (
+                {(isReadOnly ? state.userProfile : user) ? (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full border border-app-bright/20 p-0.5">
-                      {user.photoURL ? (
-                        <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                      {(isReadOnly ? state.userProfile : user)?.photoURL ? (
+                        <img src={(isReadOnly ? state.userProfile : user)?.photoURL || ''} alt="Profile" className="w-full h-full rounded-full object-cover" />
                       ) : (
                         <div className="w-full h-full rounded-full bg-app-bright/10 flex items-center justify-center text-app-bright font-black text-[10px]">
-                          {user.displayName?.charAt(0) || '?'}
+                          {(isReadOnly ? state.userProfile : user)?.displayName?.charAt(0) || '?'}
                         </div>
                       )}
                     </div>

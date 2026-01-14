@@ -57,4 +57,9 @@ export interface AppState {
   sites: Site[];
   competencyReflections: Record<string, string>;
   primarySetting: 'Primary' | 'Secondary';
+  userProfile?: {
+    displayName: string | null;
+    email: string | null;
+    photoURL: string | null;
+  };
 }
