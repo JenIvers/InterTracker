@@ -12,6 +12,8 @@ import { loadStateFromFirestore, saveStateToFirestore } from './firestoreService
 import { subscribeToAuthChanges, checkRedirectResult } from './authService';
 import { User } from 'firebase/auth';
 import logo from './bethel-logo.png';
+import { register as registerSW } from './registerServiceWorker';
+import { RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setView] = useState<string>('dashboard');
@@ -19,6 +21,8 @@ const App: React.FC = () => {
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showUpdateToast, setShowUpdateToast] = useState(false);
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [state, setState] = useState<AppState>({
     logs: [],
     artifacts: [],
@@ -31,6 +35,12 @@ const App: React.FC = () => {
 
   // Combined Auth and Initial Data Load
   useEffect(() => {
+    // Register Service Worker for updates
+    registerSW((registration) => {
+      setSwRegistration(registration);
+      setShowUpdateToast(true);
+    });
+
     let isMounted = true;
 
     const initialize = async () => {
@@ -154,6 +164,14 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, primarySetting: setting }));
   };
 
+  const onUpdate = () => {
+    if (swRegistration && swRegistration.waiting) {
+      swRegistration.waiting.postMessage('skipWaiting');
+    }
+    setShowUpdateToast(false);
+    window.location.reload();
+  };
+
   if (!user && !isReadOnly && !isLoading) {
     return <LoginView />;
   }
@@ -254,6 +272,29 @@ const App: React.FC = () => {
       </main>
 
       <BottomNav currentView={currentView} setView={setView} />
+
+      {/* Update Notification Toast */}
+      {showUpdateToast && (
+        <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:bottom-8 z-[100] animate-in slide-in-from-bottom-5 duration-500">
+          <div className="glass-dark p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 border border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-app-bright/20 flex items-center justify-center text-app-bright">
+                <RefreshCw size={20} className="animate-spin-slow" />
+              </div>
+              <div>
+                <p className="text-white text-sm font-bold">New Version Available</p>
+                <p className="text-white/60 text-[10px] uppercase tracking-widest font-black">Updates are ready to install</p>
+              </div>
+            </div>
+            <button 
+              onClick={onUpdate}
+              className="bg-app-bright hover:bg-app-bright/90 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-app-bright/20"
+            >
+              Update Now
+            </button>
+          </div>
+        </div>
+      )}
 
       {!isReadOnly && (currentView === 'dashboard' || currentView === 'sites') && (
         <div className="md:hidden fixed bottom-20 right-6 z-40">
