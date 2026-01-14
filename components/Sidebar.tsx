@@ -8,9 +8,14 @@ interface SidebarProps {
   setView: (view: string) => void;
   isReadOnly?: boolean;
   userId?: string;
+  user?: {
+    displayName?: string | null;
+    email?: string | null;
+    photoURL?: string | null;
+  } | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isReadOnly, userId }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isReadOnly, userId, user }) => {
   const [copied, setCopied] = useState(false);
 
   const navItems = [
@@ -31,14 +36,35 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isReadOnly, use
 
   return (
     <aside className="w-64 glass border-r border-white/30 h-screen fixed left-0 top-0 hidden md:flex flex-col z-50">
-      <div className="p-10 border-b border-white/20 flex flex-col items-center text-center">
-        <img src={logo} alt="Bethel University" className="w-20 mb-6 drop-shadow-sm" />
+      <div className="p-8 border-b border-white/20 flex flex-col items-center text-center">
+        <img src={logo} alt="Bethel University" className="w-16 mb-4 drop-shadow-sm" />
         <h1 className="text-2xl font-black text-app-dark bg-gradient-to-br from-app-dark via-app-deep to-app-bright bg-clip-text text-transparent tracking-tighter">
           InternPro
         </h1>
-        <p className="text-[10px] text-app-slate font-black uppercase tracking-[0.25em] mt-2 opacity-70">
-          Bethel University
-        </p>
+        
+        {user ? (
+          <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="w-12 h-12 rounded-full border-2 border-app-bright/30 p-0.5 mb-2 shadow-sm">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full rounded-full object-cover" />
+              ) : (
+                <div className="w-full h-full rounded-full bg-app-bright/10 flex items-center justify-center text-app-bright font-black text-xs">
+                  {user.displayName?.charAt(0) || user.email?.charAt(0) || '?'}
+                </div>
+              )}
+            </div>
+            <p className="text-[11px] text-app-dark font-bold leading-tight line-clamp-1 px-2">
+              {user.displayName || user.email}
+            </p>
+            <p className="text-[9px] text-app-slate font-black uppercase tracking-widest mt-1 opacity-60">
+              Personalized Portfolio
+            </p>
+          </div>
+        ) : (
+          <p className="text-[10px] text-app-slate font-black uppercase tracking-[0.25em] mt-2 opacity-70">
+            Bethel University
+          </p>
+        )}
       </div>
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto mt-4">
         {navItems.map((item) => {

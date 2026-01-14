@@ -237,7 +237,13 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar currentView={currentView} setView={setView} isReadOnly={isReadOnly} userId={user?.uid} />
+      <Sidebar 
+        currentView={currentView} 
+        setView={setView} 
+        isReadOnly={isReadOnly} 
+        userId={user?.uid} 
+        user={user}
+      />
       
       <main className="flex-1 md:ml-64 p-4 md:p-8 max-w-7xl mx-auto w-full pb-24 md:pb-8">
         {isLoading ? (
@@ -258,11 +264,25 @@ const App: React.FC = () => {
                   InternPro
                 </h1>
               </div>
-              <div className="flex items-center gap-2 text-right">
+              <div className="flex items-center gap-3">
                 {isReadOnly && (
                   <span className="bg-app-bright/10 text-app-bright text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest mr-2">Viewer Mode</span>
                 )}
-                <span className="text-[10px] text-app-slate font-black uppercase tracking-widest opacity-70">Bethel University</span>
+                {user && !isReadOnly ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full border border-app-bright/20 p-0.5">
+                      {user.photoURL ? (
+                        <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-app-bright/10 flex items-center justify-center text-app-bright font-black text-[10px]">
+                          {user.displayName?.charAt(0) || '?'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-app-slate font-black uppercase tracking-widest opacity-70">Bethel University</span>
+                )}
               </div>
             </div>
 
