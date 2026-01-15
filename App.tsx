@@ -129,36 +129,79 @@ const App: React.FC = () => {
   }, []);
 
   // Sync to Firestore (only if logged in and not read-only)
+  // Uses a smart save strategy: 30s idle timeout + save on tab visibility change
+  const pendingSaveRef = React.useRef(false);
+  const lastSavedStateRef = React.useRef<string>('');
+
+  const performSave = React.useCallback(async () => {
+    if (isLoading || isAuthInitializing || isReadOnly || !user) return;
+
+    // Skip if state hasn't changed since last save
+    const currentStateJson = JSON.stringify(state);
+    if (currentStateJson === lastSavedStateRef.current) return;
+
+    pendingSaveRef.current = false;
+    const result = await saveStateToFirestore(user.uid, state);
+    if (!result.success) {
+      setSaveError(result.error || "Failed to save data");
+      setTimeout(() => setSaveError(null), 5000);
+    } else {
+      setSaveError(null);
+      lastSavedStateRef.current = currentStateJson;
+    }
+  }, [state, isLoading, isAuthInitializing, isReadOnly, user]);
+
+  // Idle timeout save (30 seconds after last change)
   useEffect(() => {
     if (isLoading || isAuthInitializing || isReadOnly || !user) return;
 
-    const timeoutId = setTimeout(async () => {
-      const result = await saveStateToFirestore(user.uid, state);
-      if (!result.success) {
-        setSaveError(result.error || "Failed to save data");
-        // Auto-dismiss error after 5 seconds
-        setTimeout(() => setSaveError(null), 5000);
-      } else {
-        // Clear any previous errors on successful save
-        setSaveError(null);
-      }
-    }, 3000); // Increased to 3 seconds to reduce unnecessary writes
+    pendingSaveRef.current = true;
+    const timeoutId = setTimeout(() => {
+      performSave();
+    }, 30000); // 30 seconds - reduces writes by ~10x vs 3 seconds
 
     return () => clearTimeout(timeoutId);
-  }, [state, isLoading, isAuthInitializing, isReadOnly, user]);
+  }, [state, isLoading, isAuthInitializing, isReadOnly, user, performSave]);
 
-  // Save state before page unload to prevent data loss
+  // Save when user leaves the tab/app (mobile-optimized)
+  // Uses multiple events for maximum reliability on iOS PWAs
   useEffect(() => {
     if (isReadOnly || !user) return;
 
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Attempt synchronous save on page unload
-      saveStateToFirestore(user.uid, state);
+    const triggerSave = () => {
+      if (pendingSaveRef.current) {
+        performSave();
+      }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [state, user, isReadOnly]);
+    // visibilitychange: fires when switching tabs or apps
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        triggerSave();
+      }
+    };
+
+    // pagehide: more reliable than beforeunload on iOS/mobile
+    // Using capture phase ensures earliest possible execution
+    const handlePageHide = () => {
+      triggerSave();
+    };
+
+    // blur: fires when PWA loses focus (user taps outside)
+    const handleBlur = () => {
+      triggerSave();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide, { capture: true });
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide, { capture: true });
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [performSave, isReadOnly, user]);
 
   const addLog = (log: InternshipLog) => {
     setState(prev => ({ ...prev, logs: [...prev.logs, log] }));

@@ -1,5 +1,5 @@
-// Version: 1.0.0
-const CACHE_NAME = 'internpro-v1';
+// Version: 1.1.0 - Fixed OAuth redirect caching issue
+const CACHE_NAME = 'internpro-v1.1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -26,6 +26,25 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // NEVER cache auth-related requests or navigation (HTML) requests
+  // This prevents OAuth redirect loops in PWAs
+  const isNavigation = event.request.mode === 'navigate';
+  const isAuthRelated = url.hostname.includes('google') ||
+                        url.hostname.includes('firebase') ||
+                        url.hostname.includes('googleapis') ||
+                        url.pathname.includes('__/auth/');
+
+  if (isNavigation || isAuthRelated) {
+    // Network-first for navigation and auth
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for static assets only
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
