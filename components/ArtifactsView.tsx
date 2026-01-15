@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Artifact, Shelf } from '../types';
 import { ALL_COMPETENCIES } from '../constants';
-import { Folder, FolderPlus, Plus, FileText, X, Tag, Calendar, MoreVertical, Archive, Library, Check } from 'lucide-react';
+import { Folder, FolderPlus, Plus, FileText, X, Tag, Calendar, MoreVertical, Archive, Library, Check, Loader } from 'lucide-react';
+import { uploadFileToStorage } from '../storageService';
+import { User } from 'firebase/auth';
 
 interface ArtifactsViewProps {
   artifacts: Artifact[];
@@ -10,6 +12,7 @@ interface ArtifactsViewProps {
   onUpdateArtifact: (artifact: Artifact) => void;
   onAddShelf: (name: string) => void;
   isReadOnly?: boolean;
+  user?: User | null;
 }
 
 const ArtifactCard: React.FC<{ 
@@ -90,36 +93,64 @@ const ShelfSection: React.FC<{
   </div>
 );
 
-const ArtifactsView: React.FC<ArtifactsViewProps> = ({ 
-  artifacts, 
-  shelves, 
-  onAddArtifact, 
+const ArtifactsView: React.FC<ArtifactsViewProps> = ({
+  artifacts,
+  shelves,
+  onAddArtifact,
   onUpdateArtifact,
   onAddShelf,
-  isReadOnly
+  isReadOnly,
+  user
 }) => {
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
   const [isCreatingShelf, setIsCreatingShelf] = useState(false);
   const [newShelfName, setNewShelfName] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) {
+      if (!user) setUploadError("You must be logged in to upload files");
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = () => {
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const artifactId = crypto.randomUUID();
+
+      // Upload to Firebase Storage
+      const uploadResult = await uploadFileToStorage(user.uid, file, artifactId);
+
+      if (!uploadResult.success) {
+        setUploadError(uploadResult.error || "Upload failed");
+        setTimeout(() => setUploadError(null), 5000);
+        return;
+      }
+
+      // Create artifact with Storage URL instead of Base64
       const newArtifact: Artifact = {
-        id: crypto.randomUUID(),
+        id: artifactId,
         name: file.name,
         type: file.type,
-        data: reader.result as string,
+        data: uploadResult.url!, // Storage URL instead of Base64
         uploadDate: new Date().toLocaleDateString(),
         taggedCompetencyIds: [],
         shelfId: undefined
       };
+
       onAddArtifact(newArtifact);
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("An unexpected error occurred during upload");
+      setTimeout(() => setUploadError(null), 5000);
+    } finally {
+      setIsUploading(false);
+      // Reset the input
+      e.target.value = '';
+    }
   };
 
   const handleCreateShelf = (e: React.FormEvent) => {
@@ -160,21 +191,46 @@ const ArtifactsView: React.FC<ArtifactsViewProps> = ({
           <div className="flex gap-4">
             {!isReadOnly && (
               <>
-                <button 
+                <button
                   onClick={() => setIsCreatingShelf(true)}
                   className="w-14 h-14 glass text-app-slate hover:text-app-bright rounded-[1.5rem] shadow-xl flex items-center justify-center transition-all active:scale-90 border border-white/50"
                   title="Create New Portfolio Shelf"
                 >
                   <FolderPlus size={26} />
                 </button>
-                <label className="w-14 h-14 bg-app-dark text-white rounded-[1.5rem] shadow-2xl shadow-app-dark/30 flex items-center justify-center cursor-pointer hover:bg-app-deep transition-all active:scale-90">
-                  <Plus size={32} strokeWidth={3} />
-                  <input type="file" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
+                <label className={`w-14 h-14 bg-app-dark text-white rounded-[1.5rem] shadow-2xl shadow-app-dark/30 flex items-center justify-center transition-all ${isUploading ? 'cursor-wait opacity-50' : 'cursor-pointer hover:bg-app-deep active:scale-90'}`}>
+                  {isUploading ? <Loader size={32} className="animate-spin" /> : <Plus size={32} strokeWidth={3} />}
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept="image/*,application/pdf"
+                    disabled={isUploading}
+                  />
                 </label>
               </>
             )}
           </div>
         </div>
+
+        {/* Upload Error Notification */}
+        {uploadError && (
+          <div className="bg-red-500/10 border-2 border-red-500/30 p-4 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500">
+            <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-500">
+              <X size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="text-red-600 text-sm font-bold">Upload Failed</p>
+              <p className="text-red-500/80 text-xs font-medium">{uploadError}</p>
+            </div>
+            <button
+              onClick={() => setUploadError(null)}
+              className="text-red-500 hover:bg-red-500/10 p-2 rounded-xl transition-all"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
 
         {isCreatingShelf && (
           <form onSubmit={handleCreateShelf} className="glass p-10 rounded-[3rem] shadow-2xl border-2 border-app-bright/20 flex gap-4 animate-in slide-in-from-top-4 duration-500">

@@ -13,7 +13,7 @@ import { subscribeToAuthChanges, checkRedirectResult } from './authService';
 import { User } from 'firebase/auth';
 import logo from './bethel-logo.png';
 import { register as registerSW } from './registerServiceWorker';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setView] = useState<string>('dashboard');
@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showUpdateToast, setShowUpdateToast] = useState(false);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [state, setState] = useState<AppState>({
     logs: [],
     artifacts: [],
@@ -131,12 +132,33 @@ const App: React.FC = () => {
   useEffect(() => {
     if (isLoading || isAuthInitializing || isReadOnly || !user) return;
 
-    const timeoutId = setTimeout(() => {
-      saveStateToFirestore(user.uid, state);
-    }, 1000);
+    const timeoutId = setTimeout(async () => {
+      const result = await saveStateToFirestore(user.uid, state);
+      if (!result.success) {
+        setSaveError(result.error || "Failed to save data");
+        // Auto-dismiss error after 5 seconds
+        setTimeout(() => setSaveError(null), 5000);
+      } else {
+        // Clear any previous errors on successful save
+        setSaveError(null);
+      }
+    }, 3000); // Increased to 3 seconds to reduce unnecessary writes
 
     return () => clearTimeout(timeoutId);
   }, [state, isLoading, isAuthInitializing, isReadOnly, user]);
+
+  // Save state before page unload to prevent data loss
+  useEffect(() => {
+    if (isReadOnly || !user) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Attempt synchronous save on page unload
+      saveStateToFirestore(user.uid, state);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [state, user, isReadOnly]);
 
   const addLog = (log: InternshipLog) => {
     setState(prev => ({ ...prev, logs: [...prev.logs, log] }));
@@ -224,13 +246,14 @@ const App: React.FC = () => {
         );
       case 'artifacts':
         return (
-          <ArtifactsView 
-            artifacts={state.artifacts} 
+          <ArtifactsView
+            artifacts={state.artifacts}
             shelves={state.shelves}
-            onAddArtifact={addArtifact} 
+            onAddArtifact={addArtifact}
             onUpdateArtifact={updateArtifact}
             onAddShelf={addShelf}
             isReadOnly={isReadOnly}
+            user={user}
           />
         );
       case 'sites':
@@ -326,11 +349,34 @@ const App: React.FC = () => {
                 <p className="text-white/60 text-[10px] uppercase tracking-widest font-black">Updates are ready to install</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={onUpdate}
               className="bg-app-bright hover:bg-app-bright/90 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-app-bright/20"
             >
               Update Now
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Save Error Notification Toast */}
+      {saveError && (
+        <div className="fixed top-4 left-4 right-4 md:left-auto md:right-8 md:top-8 z-[100] animate-in slide-in-from-top-5 duration-500">
+          <div className="bg-red-500/95 backdrop-blur-sm p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 border border-red-400/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                <AlertCircle size={20} />
+              </div>
+              <div>
+                <p className="text-white text-sm font-bold">Save Failed</p>
+                <p className="text-white/90 text-[10px] uppercase tracking-widest font-black">{saveError}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSaveError(null)}
+              className="text-white hover:bg-white/20 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
+            >
+              Dismiss
             </button>
           </div>
         </div>
