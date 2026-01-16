@@ -207,6 +207,13 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, logs: [...prev.logs, log] }));
   };
 
+  const updateLog = (updatedLog: InternshipLog) => {
+    setState(prev => ({
+      ...prev,
+      logs: prev.logs.map(log => log.id === updatedLog.id ? updatedLog : log)
+    }));
+  };
+
   const updateProgress = (id: string, level: AttainmentLevel) => {
     setState(prev => ({
       ...prev,
@@ -274,7 +281,7 @@ const App: React.FC = () => {
           />
         );
       case 'logs':
-        return <LogsView logs={state.logs} onAddLog={addLog} isReadOnly={isReadOnly} />;
+        return <LogsView logs={state.logs} onAddLog={addLog} onUpdateLog={updateLog} isReadOnly={isReadOnly} />;
       case 'competencies':
         return (
           <CompetenciesView 

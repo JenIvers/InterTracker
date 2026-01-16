@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { InternshipLog } from '../types';
 import { ALL_COMPETENCIES } from '../constants';
-import { Clock, Calendar, School, Plus, PencilLine, Tag, Timer, X } from 'lucide-react';
+import { Clock, Calendar, School, Plus, PencilLine, Tag, Timer, X, Edit2 } from 'lucide-react';
 
 interface LogsViewProps {
   logs: InternshipLog[];
   onAddLog: (log: InternshipLog) => void;
+  onUpdateLog: (log: InternshipLog) => void;
   isReadOnly?: boolean;
 }
 
-const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
+const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, onUpdateLog, isReadOnly }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<InternshipLog>>({
     date: new Date().toISOString().split('T')[0],
@@ -18,7 +19,7 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
     hours: 4,
     activity: '',
     location: '',
-    schoolLevel: 'Secondary',
+    schoolLevel: 'Middle',
     taggedCompetencyIds: [],
     reflections: ''
   });
@@ -38,23 +39,7 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newLog: InternshipLog = {
-      id: crypto.randomUUID(),
-      date: formData.date!,
-      startTime: formData.startTime!,
-      endTime: formData.endTime!,
-      hours: Number(formData.hours),
-      activity: formData.activity!,
-      location: formData.location!,
-      schoolLevel: formData.schoolLevel as InternshipLog['schoolLevel'],
-      taggedCompetencyIds: formData.taggedCompetencyIds || [],
-      reflections: formData.reflections || '',
-      artifactIds: []
-    };
-    onAddLog(newLog);
-    setIsAdding(false);
+  const resetForm = () => {
     setFormData({
       date: new Date().toISOString().split('T')[0],
       startTime: '08:00',
@@ -62,10 +47,56 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
       hours: 4,
       activity: '',
       location: '',
-      schoolLevel: 'Secondary',
+      schoolLevel: 'Middle',
       taggedCompetencyIds: [],
       reflections: ''
     });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (formData.id) {
+      // Update existing log
+      const updatedLog: InternshipLog = {
+        ...formData as InternshipLog,
+        hours: Number(formData.hours),
+        taggedCompetencyIds: formData.taggedCompetencyIds || [],
+        reflections: formData.reflections || '',
+        artifactIds: formData.artifactIds || []
+      };
+      onUpdateLog(updatedLog);
+    } else {
+      // Create new log
+      const newLog: InternshipLog = {
+        id: crypto.randomUUID(),
+        date: formData.date!,
+        startTime: formData.startTime!,
+        endTime: formData.endTime!,
+        hours: Number(formData.hours),
+        activity: formData.activity!,
+        location: formData.location!,
+        schoolLevel: formData.schoolLevel as InternshipLog['schoolLevel'],
+        taggedCompetencyIds: formData.taggedCompetencyIds || [],
+        reflections: formData.reflections || '',
+        artifactIds: []
+      };
+      onAddLog(newLog);
+    }
+    
+    setIsAdding(false);
+    resetForm();
+  };
+
+  const handleEditClick = (log: InternshipLog) => {
+    setFormData({ ...log });
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleClose = () => {
+    setIsAdding(false);
+    resetForm();
   };
 
   return (
@@ -77,7 +108,7 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
         </div>
         {!isReadOnly && (
           <button
-            onClick={() => setIsAdding(!isAdding)}
+            onClick={isAdding ? handleClose : () => setIsAdding(true)}
             className={`px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 shadow-2xl ${
               isAdding 
                 ? 'bg-white text-app-dark border border-white/50' 
@@ -110,9 +141,10 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
               </label>
               <div className="relative">
                 <select name="schoolLevel" value={formData.schoolLevel} onChange={handleInputChange} className="w-full p-5 rounded-[1.5rem] bg-white/60 border-none focus:ring-4 focus:ring-app-bright/10 outline-none font-bold text-app-dark appearance-none shadow-inner">
-                  <option value="Primary">Primary (K-6)</option>
-                  <option value="Secondary">Secondary (6-12)</option>
-                  <option value="Alternate">Alternate Setting</option>
+                  <option value="Elementary">Elementary</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Middle">Middle School</option>
+                  <option value="High School">High School</option>
                 </select>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
                   <Plus size={16} className="rotate-45" />
@@ -158,7 +190,7 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
           </div>
 
           <button type="submit" className="w-full py-6 bg-app-dark text-white rounded-[2rem] font-black uppercase text-sm tracking-[0.3em] shadow-2xl shadow-app-dark/40 active:scale-[0.98] transition-all hover:bg-black">
-            Archive Session to Log
+            {formData.id ? 'Update Session Log' : 'Archive Session to Log'}
           </button>
         </form>
       )}
@@ -181,9 +213,22 @@ const LogsView: React.FC<LogsViewProps> = ({ logs, onAddLog, isReadOnly }) => {
                     <h4 className="text-xl font-black text-app-dark leading-tight group-hover:text-app-bright transition-colors">{log.activity}</h4>
                  </div>
               </div>
-              <div className="text-right glass-blue p-5 rounded-[2rem] min-w-[120px] shadow-sm">
-                <span className="text-4xl font-black text-app-dark tracking-tighter">{log.hours}</span>
-                <span className="text-[11px] text-app-slate block uppercase font-black tracking-widest opacity-60">Session Hours</span>
+              
+              <div className="flex flex-col items-end gap-2">
+                 <div className="text-right glass-blue p-5 rounded-[2rem] min-w-[120px] shadow-sm">
+                   <span className="text-4xl font-black text-app-dark tracking-tighter">{log.hours}</span>
+                   <span className="text-[11px] text-app-slate block uppercase font-black tracking-widest opacity-60">Session Hours</span>
+                 </div>
+                 
+                 {!isReadOnly && (
+                    <button 
+                      onClick={() => handleEditClick(log)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/50 text-app-slate hover:bg-app-bright hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
+                    >
+                      <Edit2 size={12} strokeWidth={3} />
+                      Edit Log
+                    </button>
+                 )}
               </div>
             </div>
             

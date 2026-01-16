@@ -19,9 +19,9 @@ const Dashboard: React.FC<DashboardProps> = ({ logs, progress, primarySetting, o
   const alt1Setting = primarySetting === 'Secondary' ? 'Primary' : 'Secondary';
 
   const hoursByLevel = {
-    Secondary: logs.filter(l => l.schoolLevel === 'Secondary').reduce((a, b) => a + b.hours, 0),
-    Primary: logs.filter(l => l.schoolLevel === 'Primary').reduce((a, b) => a + b.hours, 0),
-    Alternate: logs.filter(l => l.schoolLevel === 'Alternate').reduce((a, b) => a + b.hours, 0),
+    Secondary: logs.filter(l => l.schoolLevel === 'Middle' || l.schoolLevel === 'High School').reduce((a, b) => a + b.hours, 0),
+    Primary: logs.filter(l => l.schoolLevel === 'Elementary' || l.schoolLevel === 'Intermediate').reduce((a, b) => a + b.hours, 0),
+    Alternate: 0,
   };
 
   const requirements = [

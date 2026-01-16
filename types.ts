@@ -43,7 +43,7 @@ export interface InternshipLog {
   hours: number;
   activity: string;
   location: string;
-  schoolLevel: 'Primary' | 'Secondary' | 'Alternate';
+  schoolLevel: 'Elementary' | 'Intermediate' | 'Middle' | 'High School';
   taggedCompetencyIds: string[];
   reflections: string;
   artifactIds: string[];
